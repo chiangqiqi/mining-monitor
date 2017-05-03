@@ -26,4 +26,4 @@ class SMSSender(object):
         return res
 
     def send_warning(self, tele, msg):
-        self.send(tele, '【云片网】您的验证码是' + msg)
+        return self.send(tele, '【云片网】您的验证码是' + msg)

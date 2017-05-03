@@ -1,5 +1,7 @@
 import requests
 import json
+import logging
+
 
 class Monitor(object):
     url='https://eth.waterhole.io:8080/api/accounts/{0}'
@@ -19,7 +21,7 @@ class Monitor(object):
         try:
             resp = self._get_minor_info()
         except requests.exceptions.ConnectionError as e:
-            print(e)
+            logging.warning(e)
             return None
 
         if resp.status_code is 200:
@@ -31,15 +33,16 @@ class Monitor(object):
     def get_offline_workers(self):
         workers = self.work_info()
 
+        logging.info('workers list {0}'.format(workers))
         if workers:
             offline_workers = [w for w,v in workers.items() if v['offline']]
 
             if offline_workers:
-                return ",".join(offline_workers)
+                return "".join(offline_workers)
 
     def get_online_workers(self):
         workers = self.work_info()
         
         online_workers = [w for w,v in workers.items() if not v['offline']]
         if online_workers:
-            return ",".join(online_workers)
+            return "".join(online_workers)
