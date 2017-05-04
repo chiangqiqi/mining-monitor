@@ -64,7 +64,9 @@ class Monitor:
         offline, online = self.pool.get_workers(account)
         if offline is not None:
             pattern = "【矿机监控】{0}矿机运行中, {1}掉线"
-            res = send_warning(tele, pattern.format(str(online), str(offline)))
+            res = send_warning(tele,
+                               pattern.format(str(online),
+                                              str(offline)[:10]+'...'))
             print(res.text)
             
     def run(self, jiange):
