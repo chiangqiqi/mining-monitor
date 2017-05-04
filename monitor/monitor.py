@@ -19,7 +19,7 @@ class WaterPool(object):
         得到矿机运行信息
         """
         accurl = self.url.format(account)
-        res = requests.get(accurl)
+        res = requests.get(accurl,timeout=2)
         return res
 
     def work_info(self, account):
@@ -48,8 +48,9 @@ class WaterPool(object):
             online_workers = [w for w, v in workers.items()
                               if not v['offline']]
 
-            return "".join(offline_workers), "".join(online_workers)
-
+            return ",".join(offline_workers), ",".join(online_workers)
+        else:
+            return None, None
 
 class Monitor:
     def __init__(self):
@@ -62,11 +63,17 @@ class Monitor:
     def check_status(self, account, tele):
         offline, online = self.pool.get_workers(account)
         if offline is not None:
-            send_warning(tele, offline)
-    
+            pattern = "【矿机监控】{0}矿机运行中, {1}掉线"
+            res = send_warning(tele, pattern.format(str(online), str(offline)))
+            print(res.text)
+            
     def run(self, jiange):
-        cur = accounts_tab.find()
         while(1):
+            cur = accounts_tab.find()
             for acc in cur:
-                self.check_status(acc['account'], acc['tele'])
-                sleep(jiange)
+                logging.info('checking account {0} status'.format(acc['account']))
+                try:
+                    res = self.check_status(acc['account'], acc['tele'])
+                except:
+                    logging.warning('checking status error')
+            sleep(jiange)

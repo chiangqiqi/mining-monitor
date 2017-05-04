@@ -4,6 +4,7 @@ import requests
 from urllib.parse import urlencode
 from datetime import datetime, timedelta
 from .config import sms_log_tab
+import logging
 
 
 class SMSSender(object):
@@ -27,11 +28,12 @@ class SMSSender(object):
         params = urlencode({"apikey": self.key,
                             "text": content, 'mobile': tele})
         res = requests.post(self.url, params,
-                            headers=headers)
+                            headers=headers, timeout=2)
         return res
 
     def send_warning(self, tele, msg):
-        return self.send(tele, '【云片网】您的验证码是' + msg)
+        logging.info('send msg {0} to tele {1}'.format(msg, tele))
+        return self.send(tele, msg)
 
 
 class SMSDispatcher(SMSSender):
@@ -50,7 +52,7 @@ class SMSDispatcher(SMSSender):
 
     def _last_msg(self, tele):
         cur = sms_log_tab.find({'tele': tele}).sort('_id', -1).limit(1)
-        next((x for x in cur), None)
+        return next((x for x in cur), None)
 
     def _shoud_send(self, tele):
         """
@@ -70,4 +72,5 @@ class SMSDispatcher(SMSSender):
         发送短信
         """
         if self._shoud_send(tele):
-            super.send_warning(tele, msg)
+            self._log_sms(tele, msg)
+            return super().send_warning(tele, msg)
